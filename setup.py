@@ -10,7 +10,7 @@ setup(name='mp-tool',
       packages=['mp_tool'],
       scripts=['mp-tool'],
       url='https://example.com/',
-      install_requires=['websocket_client==0.40.0'],
+      install_requires=['websocket_client==0.40.0','pyserial==3.2.1'],
       tests_require=[],
       classifiers=[
           "Programming Language :: Python",
