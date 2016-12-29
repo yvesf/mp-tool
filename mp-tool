@@ -31,9 +31,11 @@ if __name__ == '__main__':
     parser_repl.add_argument("--password")
 
     parser_put = subparsers.add_parser("put", help="Send file over websocket")
-    parser_put.set_defaults(func=lambda a: import_module('mp_tool.web').put(a.WEBSOCKET, a.password, a.CODE))
+    parser_put.set_defaults(func=lambda a: import_module('mp_tool.web').put(a.WEBSOCKET, a.password, a.FILE, a.TARGET))
     parser_put.add_argument("WEBSOCKET", help="Websocket address (e.g. ws://ESP_E1278E:8266)")
     parser_put.add_argument("--password")
+    parser_put.add_argument("FILE", help="Filename")
+    parser_put.add_argument("TARGET", nargs='?', help="remote target path/filename")
 
     parser_put_serial = subparsers.add_parser("put-serial", help="Send file over serial")
     parser_put_serial.set_defaults(func=lambda a: import_module('mp_tool.serial').put(a.port, a.FILE, a.TARGET))
@@ -42,8 +44,10 @@ if __name__ == '__main__':
     parser_put_serial.add_argument("TARGET", nargs='?', help="remote target path/filename")
 
     parser_get = subparsers.add_parser("get", help="Load file over websocket")
-    parser_get.set_defaults(func=lambda a: import_module('mp_tool.web').get(a.WEBSOCKET, a.password))
+    parser_get.set_defaults(func=lambda a: import_module('mp_tool.web').get(a.WEBSOCKET, a.password, a.FILE, a.TARGET))
     parser_get.add_argument("WEBSOCKET", help="Websocket address (e.g. ws://ESP_E1278E:8266)")
+    parser_get.add_argument("FILE", help="Filename")
+    parser_get.add_argument("TARGET", nargs='?', help="local target path/filename")
     parser_get.add_argument("--password")
 
     parser_get_serial = subparsers.add_parser("get-serial", help="Get file over serial")
