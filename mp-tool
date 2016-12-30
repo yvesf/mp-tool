@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from mp_tool.util import HelpAction, format_subcommands_help, get_default_serial_port
+from mp_tool.util import UsageAction, HelpAction, format_subcommands_help, get_default_serial_port
 
 from argparse import ArgumentParser
 from importlib import import_module
@@ -11,14 +11,18 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(add_help=False)
     parser.add_argument("--help", action=HelpAction, help="Display full help")
+    parser.add_argument("-h", action=UsageAction, help="Display usage")
+    parser.add_argument("--password", help="Password for websocket communication")
+    parser.add_argument("--ws", default="ws://ESP_E1278E:8266",
+                        help="Websocket address (default: ws://ESP_E1278E:8266)")
+    parser.add_argument("--port", default=default_port,
+                        help="Port for serial communication (default " + default_port + ")")
 
     subparsers = parser.add_subparsers()
 
     parser_eval = subparsers.add_parser("eval", help="Eval python code over websocket")
-    parser_eval.set_defaults(func=lambda a: import_module('mp_tool.web').eval(a.WEBSOCKET, a.password, a.CODE))
-    parser_eval.add_argument("WEBSOCKET", help="Websocket address (e.g. ws://ESP_E1278E:8266)")
+    parser_eval.set_defaults(func=lambda a: import_module('mp_tool.web').eval(a.ws, a.password, a.CODE))
     parser_eval.add_argument("CODE", help="Code to execute")
-    parser_eval.add_argument("--password")
 
     parser_eval_serial = subparsers.add_parser("eval-serial", help="Eval python code over serial")
     parser_eval_serial.set_defaults(func=lambda a: import_module('mp_tool.serial').eval(a.port, a.CODE))
@@ -26,39 +30,30 @@ if __name__ == '__main__':
     parser_eval_serial.add_argument("CODE", help="Code to execute")
 
     parser_repl = subparsers.add_parser("repl", help="Interactive REPL over websocket")
-    parser_repl.set_defaults(func=lambda a: import_module('mp_tool.web').repl(a.WEBSOCKET, a.password))
-    parser_repl.add_argument("WEBSOCKET", help="Websocket address (e.g. ws://ESP_E1278E:8266)")
-    parser_repl.add_argument("--password")
+    parser_repl.set_defaults(func=lambda a: import_module('mp_tool.web').repl(a.ws, a.password))
 
     parser_put = subparsers.add_parser("put", help="Send file over websocket")
-    parser_put.set_defaults(func=lambda a: import_module('mp_tool.web').put(a.WEBSOCKET, a.password, a.FILE, a.TARGET))
-    parser_put.add_argument("WEBSOCKET", help="Websocket address (e.g. ws://ESP_E1278E:8266)")
-    parser_put.add_argument("--password")
+    parser_put.set_defaults(func=lambda a: import_module('mp_tool.web').put(a.ws, a.password, a.FILE, a.TARGET))
     parser_put.add_argument("FILE", help="Filename")
     parser_put.add_argument("TARGET", nargs='?', help="remote target path/filename")
 
     parser_put_serial = subparsers.add_parser("put-serial", help="Send file over serial")
     parser_put_serial.set_defaults(func=lambda a: import_module('mp_tool.serial').put(a.port, a.FILE, a.TARGET))
-    parser_put_serial.add_argument("--port", default=default_port, help="Serial port, default " + default_port)
     parser_put_serial.add_argument("FILE", help="Filename")
     parser_put_serial.add_argument("TARGET", nargs='?', help="remote target path/filename")
 
     parser_get = subparsers.add_parser("get", help="Load file over websocket")
-    parser_get.set_defaults(func=lambda a: import_module('mp_tool.web').get(a.WEBSOCKET, a.password, a.FILE, a.TARGET))
-    parser_get.add_argument("WEBSOCKET", help="Websocket address (e.g. ws://ESP_E1278E:8266)")
+    parser_get.set_defaults(func=lambda a: import_module('mp_tool.web').get(a.ws, a.password, a.FILE, a.TARGET))
     parser_get.add_argument("FILE", help="Filename")
     parser_get.add_argument("TARGET", nargs='?', help="local target path/filename")
-    parser_get.add_argument("--password")
 
     parser_get_serial = subparsers.add_parser("get-serial", help="Get file over serial")
     parser_get_serial.set_defaults(func=lambda a: import_module('mp_tool.serial').get(a.port, a.FILE, a.TARGET))
-    parser_get_serial.add_argument("--port", default=default_port, help="Serial port, default " + default_port)
     parser_get_serial.add_argument("FILE", help="Filename")
     parser_get_serial.add_argument("TARGET", nargs='?', help="local target path/filename")
 
     parser_ls_serial = subparsers.add_parser("ls-serial", help="List files over serial")
     parser_ls_serial.set_defaults(func=lambda a: import_module('mp_tool.serial').ls(a.port, a.DIR))
-    parser_ls_serial.add_argument("--port", default=default_port, help="Serial port, default " + default_port)
     parser_ls_serial.add_argument("DIR", default=".", nargs='?', help="List files in this directory (Default '.')")
 
     args = parser.parse_args(argv[1:])

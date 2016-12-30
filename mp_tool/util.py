@@ -2,6 +2,19 @@ import argparse
 import platform
 
 
+class UsageAction(argparse._HelpAction):
+    def __call__(self, parser, namespace, values, option_string=None):
+        formatter = parser._get_formatter()
+        formatter.add_usage(parser.usage,
+                            parser._actions,
+                            parser._mutually_exclusive_groups)
+
+        formatter.start_section(parser._optionals.title)
+        formatter.end_section()
+        print(formatter.format_help())
+        parser.exit(0)
+
+
 class HelpAction(argparse._HelpAction):
     def __call__(self, parser, namespace, values, option_string=None):
         formatter = parser._get_formatter()
@@ -24,13 +37,7 @@ class HelpAction(argparse._HelpAction):
             for subaction in subparsers_action._get_subactions():
                 subparser = subparsers[subaction.dest]
                 usage = formatter._format_actions_usage(subparser._actions, [])
-                usage_parent = formatter._format_actions_usage(filter(
-                    lambda a: not (isinstance(a, HelpAction) or isinstance(a, argparse._SubParsersAction)),
-                    parser._actions), [])
-                formatter.start_section("{} {} {} {}".format(formatter._prog,
-                                                             usage_parent,
-                                                             subaction.dest,
-                                                             usage))
+                formatter.start_section("{} {}".format(subaction.dest, usage))
                 formatter.add_text(subaction.help)
                 formatter.add_arguments(subparser._positionals._group_actions)
                 formatter.add_arguments(filter(lambda a: not isinstance(a, argparse._HelpAction),
