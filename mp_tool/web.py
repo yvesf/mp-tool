@@ -129,6 +129,8 @@ def eval(url: str, password: str, code: str):
     ws = _connect_and_auth(url, password)
     ws.send(Constants.ENTER_REPL_MODE)
     stdout.write(read_until_eval_or_timeout(ws))
+
+    ws.settimeout(5)
     ws.send(code + "\r\n")
 
     result = read_until_eval_or_timeout(ws)
@@ -139,8 +141,11 @@ def eval(url: str, password: str, code: str):
 
 def read_until_eval_or_timeout(ws: websocket.WebSocket):
     buf = ""
-    while not buf.endswith("\r\n>>> "):
-        buf += ws.recv()
+    try:
+        while not buf.endswith("\r\n>>> "):
+            buf += ws.recv()
+    except websocket.WebSocketTimeoutException:
+        pass
     return buf
 
 
